@@ -7,12 +7,14 @@ import AddTaskForm from "./AddTaskForm";
 type TodolistPropsType = {
     title: string
     tasks: Array<TaskType>
+    removeTask: (taskID: number) => void
 }
 
 export type TaskType = {
     id: number
     title: string
     isDone: boolean
+
 }
 
 const Todolist = (props: TodolistPropsType) => {
@@ -20,7 +22,7 @@ const Todolist = (props: TodolistPropsType) => {
         <div>
             <TodoListHeader title={props.title}/>
             <AddTaskForm />
-            <TasksList tasks={props.tasks}/>
+            <TasksList tasks={props.tasks} removeTask={props.removeTask}/>
         </div>
     );
 };

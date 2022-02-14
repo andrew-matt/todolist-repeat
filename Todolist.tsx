@@ -2,12 +2,14 @@ import React from 'react';
 import TodoListHeader from "./TodoListHeader";
 import TasksList from "./TasksList";
 import AddTaskForm from "./AddTaskForm";
+import {FilterValuesType} from "./App";
 
 
 type TodolistPropsType = {
     title: string
     tasks: Array<TaskType>
     removeTask: (taskID: number) => void
+    changeFilter: (filter: FilterValuesType) => void
 }
 
 export type TaskType = {
@@ -22,7 +24,7 @@ const Todolist = (props: TodolistPropsType) => {
         <div>
             <TodoListHeader title={props.title}/>
             <AddTaskForm />
-            <TasksList tasks={props.tasks} removeTask={props.removeTask}/>
+            <TasksList tasks={props.tasks} removeTask={props.removeTask} changeFilter={props.changeFilter}/>
         </div>
     );
 };

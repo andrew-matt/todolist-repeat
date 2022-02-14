@@ -2,10 +2,12 @@ import React from 'react';
 import Task from "./Task";
 import {TaskType} from "./Todolist";
 import ControlButtons from "./ControlButtons";
+import {FilterValuesType} from "./App";
 
 type TasksListPropsType = {
     tasks: Array<TaskType>
     removeTask: (taskID: number) => void
+    changeFilter: (filter: FilterValuesType) => void
 }
 
 const TasksList = (props: TasksListPropsType) => {
@@ -17,7 +19,7 @@ const TasksList = (props: TasksListPropsType) => {
             <ul>
                 {tasksComponentsList}
             </ul>
-            <ControlButtons/>
+            <ControlButtons changeFilter={props.changeFilter}/>
         </>
     );
 };

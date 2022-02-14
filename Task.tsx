@@ -1,5 +1,6 @@
 import React from 'react';
 import {TaskType} from "./Todolist";
+import {FilterValuesType} from "./App";
 
 type TaskPropsType = TaskType & {
     removeTask: (taskID: number) => void

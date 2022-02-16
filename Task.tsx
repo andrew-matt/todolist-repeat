@@ -3,12 +3,11 @@ import {TaskType} from "./Todolist";
 import {FilterValuesType} from "./App";
 
 type TaskPropsType = TaskType & {
-    removeTask: (taskID: number) => void
+    removeTask: (taskID: string) => void
 }
 
 
 const Task = (props: TaskPropsType) => {
-    console.log(props.removeTask)
     return (
         <li>
             <input type="checkbox"

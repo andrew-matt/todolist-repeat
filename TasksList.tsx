@@ -8,18 +8,29 @@ type TasksListPropsType = {
     tasks: Array<TaskType>
     removeTask: (taskID: string) => void
     changeFilter: (filter: FilterValuesType) => void
+    filter: FilterValuesType
+    changeTaskStatus: (taskId: string, isDone: boolean) => void
 }
+
 
 const TasksList = (props: TasksListPropsType) => {
     const tasksComponentsList = props.tasks.map(task => {
-        return <Task key={task.id} {...task} removeTask={props.removeTask}/>
+        return <Task
+            key={task.id}
+            {...task}
+            removeTask={props.removeTask}
+            changeTaskStatus={props.changeTaskStatus}
+        />
     })
     return (
         <>
             <ul>
                 {tasksComponentsList}
             </ul>
-            <ControlButtons changeFilter={props.changeFilter}/>
+            <ControlButtons
+                changeFilter={props.changeFilter}
+                filter={props.filter}
+            />
         </>
     );
 };

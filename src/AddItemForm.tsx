@@ -8,14 +8,14 @@ type AddItemFormPropsType = {
 export function AddItemForm(props: AddItemFormPropsType) {
 
     let [title, setTitle] = useState("")
-    let [error, setError] = useState<string | null>(null)
+    let [error, setError] = useState<boolean>(false)
 
     const addItem = () => {
         if (title.trim() !== "") {
             props.addItem(title);
             setTitle("");
         } else {
-            setError("Title is required");
+            setError(true);
         }
     }
 
@@ -24,7 +24,7 @@ export function AddItemForm(props: AddItemFormPropsType) {
     }
 
     const onKeyPressHandler = (e: KeyboardEvent<HTMLInputElement>) => {
-        setError(null);
+        setError(false);
         if (e.charCode === 13) {
             addItem();
         }
@@ -38,10 +38,10 @@ export function AddItemForm(props: AddItemFormPropsType) {
             className={error ? "error" : ""}
             label={"Title"}
             size={"small"}
+            error={error}
+            helperText={error && "Title is required!"}
         />
         <Button variant={"contained"} color={"primary"} onClick={addItem}
-                style={{minWidth: '30px', maxWidth: '30px', minHeight: '30px', maxHeight: '30px'}}>+</Button>
-
-        {error && <div className="error-message">{error}</div>}
+                style={{minWidth: '40px', maxWidth: '40px', minHeight: '40px', maxHeight: '40px'}}>+</Button>
     </div>
 }

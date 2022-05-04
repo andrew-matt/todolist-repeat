@@ -12,7 +12,16 @@ export type AddTasksActionType = {
     title: string
 }
 
-type ActionsType = RemoveTasksActionType | AddTasksActionType;
+export type ChangeTaskStatusActionType = {
+    type: 'CHANGE-TASK-STATUS',
+    taskId: string
+    isDone: boolean
+    todolistId: string
+}
+
+type ActionsType = RemoveTasksActionType
+    | AddTasksActionType
+    | ChangeTaskStatusActionType;
 
 export const tasksReducer = (state: TasksStateType, action: ActionsType): TasksStateType => {
     switch (action.type) {
@@ -24,7 +33,12 @@ export const tasksReducer = (state: TasksStateType, action: ActionsType): TasksS
         case "ADD-TASK":
             return {
                 ...state,
-                [action.todolistId]: [{id: v1(), title: "juice", isDone: false}, ...state[action.todolistId]]
+                [action.todolistId]: [{id: v1(), title: action.title, isDone: false}, ...state[action.todolistId]]
+            }
+        case "CHANGE-TASK-STATUS":
+            return {
+                ...state,
+                [action.todolistId]: state[action.todolistId].map(task => task.id === action.taskId ? {...task, isDone: action.isDone} : task)
             }
         default:
             throw new Error("I don't understand this type")
@@ -37,4 +51,8 @@ export const removeTaskAC = (todolistId: string, taskId: string): RemoveTasksAct
 
 export const addTaskAC = (todolistId: string, title: string): AddTasksActionType  => {
     return {type: 'ADD-TASK', todolistId: todolistId, title: title}
+}
+
+export const changeTaskStatusAC = (taskId: string, isDone: boolean, todolistId: string): ChangeTaskStatusActionType => {
+    return {type: 'CHANGE-TASK-STATUS', taskId, isDone, todolistId}
 }

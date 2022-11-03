@@ -8,15 +8,15 @@ import {
     fetchTodolistsTC,
     FilterValuesType,
     removeTodolistTC,
-    TodolistDomainType
+    TodolistDomainType,
 } from './todolists-reducer'
-import {addTaskTC, TasksStateType, updateTaskTC} from './tasks-reducer'
+import {TasksStateType, updateTaskTC} from './tasks-reducer'
 import {TaskStatuses} from '../../api/todolists-api'
 import {Grid, Paper} from '@material-ui/core'
 import {AddItemForm} from '../../components/AddItemForm/AddItemForm'
 import {Todolist} from './Todolist/Todolist'
-import { Redirect } from 'react-router-dom'
-import {deleteTask} from 'features/TodolistsList/tasks-sagas'
+import {Redirect} from 'react-router-dom'
+import {addTask, removeTask} from 'features/TodolistsList/tasks-sagas'
 
 type PropsType = {
     demo?: boolean
@@ -37,14 +37,12 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
         dispatch(thunk)
     }, [])
 
-    const removeTask = useCallback(function (id: string, todolistId: string) {
-        const action = deleteTask(id, todolistId)
-        dispatch(action)
+    const removeTaskCallback = useCallback(function (id: string, todolistId: string) {
+        dispatch(removeTask(id, todolistId))
     }, [])
 
-    const addTask = useCallback(function (title: string, todolistId: string) {
-        const thunk = addTaskTC(title, todolistId)
-        dispatch(thunk)
+    const addTaskCallback = useCallback(function (title: string, todolistId: string) {
+        dispatch(addTask(title, todolistId))
     }, [])
 
     const changeStatus = useCallback(function (id: string, status: TaskStatuses, todolistId: string) {
@@ -95,9 +93,9 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
                             <Todolist
                                 todolist={tl}
                                 tasks={allTodolistTasks}
-                                removeTask={removeTask}
+                                removeTask={removeTaskCallback}
                                 changeFilter={changeFilter}
-                                addTask={addTask}
+                                addTask={addTaskCallback}
                                 changeTaskStatus={changeStatus}
                                 removeTodolist={removeTodolist}
                                 changeTaskTitle={changeTaskTitle}

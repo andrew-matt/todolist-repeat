@@ -36,11 +36,11 @@ export const todolistsAPI = {
     deleteTask(todolistId: string, taskId: string): Promise<AxiosResponse<ResponseType>> {
         return instance.delete<ResponseType>(`todo-lists/${todolistId}/tasks/${taskId}`);
     },
-    createTask(todolistId: string, taskTitile: string) {
-        return instance.post<ResponseType<{ item: TaskType}>>(`todo-lists/${todolistId}/tasks`, {title: taskTitile});
+    createTask(todolistId: string, taskTitile: string): Promise<ResponseType<{ item: TaskType }>> {
+        return instance.post<ResponseType<{ item: TaskType }>>(`todo-lists/${todolistId}/tasks`, {title: taskTitile}).then(res => res.data);
     },
-    updateTask(todolistId: string, taskId: string, model: UpdateTaskModelType) {
-        return instance.put<ResponseType<TaskType>>(`todo-lists/${todolistId}/tasks/${taskId}`, model);
+    updateTask(todolistId: string, taskId: string, model: UpdateTaskModelType): Promise<ResponseType<{ item: TaskType }>> {
+        return instance.put<ResponseType<{ item: TaskType }>>(`todo-lists/${todolistId}/tasks/${taskId}`, model).then(res => res.data);
     }
 }
 
@@ -53,11 +53,10 @@ export type LoginParamsType = {
 }
 
 export const authAPI = {
-    login(data: LoginParamsType) {
-        const promise = instance.post<ResponseType<{userId?: number}>>('auth/login', data);
-        return promise;
+    login(data: LoginParamsType): Promise<LoginResponseType> {
+        return instance.post<LoginResponseType>('auth/login', data).then(res => res.data);
     },
-    logout() {
+    logout(): Promise<AxiosResponse<ResponseType<{userId?: number}>>> {
         const promise = instance.delete<ResponseType<{userId?: number}>>('auth/login');
         return promise;
     },
@@ -118,3 +117,4 @@ export type GetTasksResponse = {
     items: TaskType[]
 }
 export type MeResponseType = ResponseType<{ id: number; email: string; login: string }>
+export type LoginResponseType = ResponseType<{ userId?: number }>

@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {AppRootStateType} from '../../app/store'
+import {AppRootStateType} from 'app/store'
 import {
     addTodolistTC,
     changeTodolistFilterAC,
@@ -10,13 +10,13 @@ import {
     removeTodolistTC,
     TodolistDomainType,
 } from './todolists-reducer'
-import {TasksStateType, updateTaskTC} from './tasks-reducer'
-import {TaskStatuses} from '../../api/todolists-api'
+import {TasksStateType} from './tasks-reducer'
+import {TaskStatuses} from 'api/todolists-api'
 import {Grid, Paper} from '@material-ui/core'
-import {AddItemForm} from '../../components/AddItemForm/AddItemForm'
+import {AddItemForm} from 'components/AddItemForm/AddItemForm'
 import {Todolist} from './Todolist/Todolist'
 import {Redirect} from 'react-router-dom'
-import {addTask, removeTask} from 'features/TodolistsList/tasks-sagas'
+import {addTask, removeTask, updateTask} from 'features/TodolistsList/tasks-sagas'
 
 type PropsType = {
     demo?: boolean
@@ -31,7 +31,7 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
 
     useEffect(() => {
         if (demo || !isLoggedIn) {
-            return;
+            return
         }
         const thunk = fetchTodolistsTC()
         dispatch(thunk)
@@ -46,12 +46,12 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
     }, [])
 
     const changeStatus = useCallback(function (id: string, status: TaskStatuses, todolistId: string) {
-        const thunk = updateTaskTC(id, {status}, todolistId)
+        const thunk = updateTask(id, {status}, todolistId)
         dispatch(thunk)
     }, [])
 
     const changeTaskTitle = useCallback(function (id: string, newTitle: string, todolistId: string) {
-        const thunk = updateTaskTC(id, {title: newTitle}, todolistId)
+        const thunk = updateTask(id, {title: newTitle}, todolistId)
         dispatch(thunk)
     }, [])
 
@@ -76,7 +76,7 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
     }, [dispatch])
 
     if (!isLoggedIn) {
-        return <Redirect to={"/login"} />
+        return <Redirect to={'/login'}/>
     }
 
     return <>

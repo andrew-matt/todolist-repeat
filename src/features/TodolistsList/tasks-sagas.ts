@@ -1,10 +1,21 @@
-//sagas
-import {call, put, takeEvery} from 'redux-saga/effects'
+import {call, put, select, takeEvery} from 'redux-saga/effects'
 import {setAppStatusAC} from 'app/app-reducer'
 import {AxiosResponse} from 'axios'
-import {GetTasksResponse, ResponseType, todolistsAPI} from 'api/todolists-api'
-import {addTaskAC, removeTaskAC, setTasksAC} from 'features/TodolistsList/tasks-reducer'
+import {
+    GetTasksResponse,
+    ResponseType, TaskType,
+    todolistsAPI,
+    UpdateTaskModelType,
+} from 'api/todolists-api'
+import {
+    addTaskAC,
+    removeTaskAC,
+    setTasksAC,
+    UpdateDomainTaskModelType,
+    updateTaskAC,
+} from 'features/TodolistsList/tasks-reducer'
 import {handleServerAppErrorSaga, handleServerNetworkErrorSaga} from 'utils/error-utils'
+import {AppRootStateType} from 'app/store'
 
 export function* fetchTasksWorkerSaga(action: ReturnType<typeof fetchTasks>) {
     yield put(setAppStatusAC('loading'))
@@ -33,13 +44,13 @@ export const removeTask = (taskId: string, todolistId: string) => ({
 export function* addTaskWorkerSaga(action: ReturnType<typeof addTask>) {
     try {
         yield put(setAppStatusAC('loading'))
-        const res = yield call(todolistsAPI.createTask, action.todolistId, action.title)
-        if (res.data.resultCode === 0) {
-            const task = res.data.data.item
+        const data: ResponseType<{ item: TaskType }> = yield call(todolistsAPI.createTask, action.todolistId, action.title)
+        if (data.resultCode === 0) {
+            const task = data.data.item
             yield put(addTaskAC(task))
             yield put(setAppStatusAC('succeeded'))
         } else {
-            yield* handleServerAppErrorSaga(res.data)
+            yield* handleServerAppErrorSaga(data)
         }
     } catch (error) {
         yield* handleServerNetworkErrorSaga(error)
@@ -52,8 +63,47 @@ export const addTask = (title: string, todolistId: string) => ({
     todolistId,
 } as const)
 
+export function* updateTaskWorkerSaga(action: ReturnType<typeof updateTask>) {
+    const state: AppRootStateType = yield select();
+    const task = state.tasks[action.todolistId].find(t => t.id === action.taskId)
+    if (!task) {
+        //throw new Error("task not found in the state");
+        console.warn('task not found in the state')
+        return
+    }
+
+    const apiModel: UpdateTaskModelType = {
+        deadline: task.deadline,
+        description: task.description,
+        priority: task.priority,
+        startDate: task.startDate,
+        title: task.title,
+        status: task.status,
+        ...action.domainModel,
+    }
+
+    try {
+        const data: ResponseType<{ item: TaskType }> = yield call(todolistsAPI.updateTask, action.todolistId, action.taskId, apiModel)
+        if (data.resultCode === 0) {
+            yield put(updateTaskAC(action.taskId, action.domainModel, action.todolistId))
+        } else {
+            yield* handleServerAppErrorSaga(data)
+        }
+    } catch (error) {
+        yield* handleServerNetworkErrorSaga(error)
+    }
+}
+
+export const updateTask = (taskId: string, domainModel: UpdateDomainTaskModelType, todolistId: string) => ({
+    type: 'TASKS/UPDATE-TASK',
+    taskId,
+    domainModel,
+    todolistId,
+} as const)
+
 export function* tasksWatcherSaga() {
     yield takeEvery('TASKS/FETCH-TASKS', fetchTasksWorkerSaga)
     yield takeEvery('TASKS/REMOVE-TASK', removeTaskWorkerSaga)
     yield takeEvery('TASKS/ADD-TASK', addTaskWorkerSaga)
+    yield takeEvery('TASKS/UPDATE-TASK', updateTaskWorkerSaga)
 }

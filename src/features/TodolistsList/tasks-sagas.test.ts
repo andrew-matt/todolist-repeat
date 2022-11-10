@@ -1,4 +1,5 @@
 import {call, put, select} from 'redux-saga/effects'
+import { cloneableGenerator } from '@redux-saga/testing-utils';
 import {
     GetTasksResponse, ResponseType,
     TaskPriorities,
@@ -130,62 +131,47 @@ test('removeTaskWorkerSaga success', () => {
     expect(gen.next().done).toBeTruthy()
 })
 
-test('addTaskWorkerSaga success', () => {
-    const gen = addTaskWorkerSaga({
+describe('addTaskWorkerSaga', () => {
+    const action = {
         type: 'TASKS/ADD-TASK',
         title: taskTitle,
         todolistId,
-    })
-    expect(gen.next().value).toEqual(put(setAppStatusAC('loading')))
+    }
+
+    const gen = cloneableGenerator<any>(addTaskWorkerSaga)(action)
+    expect(gen.next(action).value).toEqual(put(setAppStatusAC('loading')))
     expect(gen.next().value).toEqual(call(todolistsAPI.createTask, todolistId, taskTitle))
 
-    expect(gen.next(response).value).toEqual(put(addTaskAC(response.data.item)))
-    expect(gen.next().value).toEqual(put(setAppStatusAC('succeeded')))
-    expect(gen.next().done).toBeTruthy()
-})
-
-test('addTaskWorkerSaga failure with message', () => {
-    const gen = addTaskWorkerSaga({
-        type: 'TASKS/ADD-TASK',
-        title: taskTitle,
-        todolistId,
+    it('puts task to store if no errors', () => {
+        const clone = gen.clone()
+        expect(clone.next(response).value).toEqual(put(addTaskAC(response.data.item)))
+        expect(clone.next().value).toEqual(put(setAppStatusAC('succeeded')))
+        expect(clone.next().done).toBeTruthy()
     })
-    expect(gen.next().value).toEqual(put(setAppStatusAC('loading')))
-    expect(gen.next().value).toEqual(call(todolistsAPI.createTask, todolistId, taskTitle))
 
-    response.resultCode = 1
-    response.messages = ['some error']
-    expect(gen.next(response).value).toEqual(put(setAppErrorAC(response.messages[0])))
-    expect(gen.next().value).toEqual(put(setAppStatusAC('failed')))
-    expect(gen.next().done).toBeTruthy()
-})
-
-test('addTaskWorkerSaga failure without message', () => {
-    const gen = addTaskWorkerSaga({
-        type: 'TASKS/ADD-TASK',
-        title: taskTitle,
-        todolistId,
+    it('puts error to store if invalid request was sent and response contains message', () => {
+        const clone = gen.clone()
+        response.resultCode = 1
+        response.messages = ['some error']
+        expect(clone.next(response).value).toEqual(put(setAppErrorAC(response.messages[0])))
+        expect(clone.next().value).toEqual(put(setAppStatusAC('failed')))
+        expect(clone.next().done).toBeTruthy()
     })
-    expect(gen.next().value).toEqual(put(setAppStatusAC('loading')))
-    expect(gen.next().value).toEqual(call(todolistsAPI.createTask, todolistId, taskTitle))
 
-    response.resultCode = 1
-    expect(gen.next(response).value).toEqual(put(setAppErrorAC('Some error occurred')))
-    expect(gen.next().value).toEqual(put(setAppStatusAC('failed')))
-    expect(gen.next().done).toBeTruthy()
-})
-
-test('addTaskWorkerSaga catch error case', () => {
-    const gen = addTaskWorkerSaga({
-        type: 'TASKS/ADD-TASK',
-        title: taskTitle,
-        todolistId,
+    it('puts error to store if invalid request was sent and response doesn\'t contain message', () => {
+        const clone = gen.clone()
+        response.resultCode = 1
+        expect(clone.next(response).value).toEqual(put(setAppErrorAC('Some error occurred')))
+        expect(clone.next().value).toEqual(put(setAppStatusAC('failed')))
+        expect(clone.next().done).toBeTruthy()
     })
-    expect(gen.next().value).toEqual(put(setAppStatusAC('loading')))
-    expect(gen.next().value).toEqual(call(todolistsAPI.createTask, todolistId, taskTitle))
-    expect(gen.throw({message: 'some error'}).value).toEqual(put(setAppErrorAC('some error')))
-    expect(gen.next().value).toEqual(put(setAppStatusAC('failed')))
-    expect(gen.next().done).toBeTruthy()
+
+    it('puts error to store if error was thrown', () => {
+        const clone = gen.clone()
+        expect(clone.throw && clone.throw({message: 'some error'}).value).toEqual(put(setAppErrorAC('some error')))
+        expect(clone.next().value).toEqual(put(setAppStatusAC('failed')))
+        expect(clone.next().done).toBeTruthy()
+    })
 })
 
 test('updateTaskWorkerSaga success', () => {
@@ -198,6 +184,7 @@ test('updateTaskWorkerSaga success', () => {
 
     expect(gen.next().value).toEqual(select())
     expect(gen.next({...state, ...response}).value).toEqual(call(todolistsAPI.updateTask, todolistId, taskId, domainModel))
+
     expect(gen.next({...state, ...response}).value).toEqual(put(updateTaskAC(taskId, domainModel, todolistId)))
     expect(gen.next().done).toBeTruthy()
 })
@@ -252,3 +239,4 @@ test('updateTaskWorkerSaga catch error case', () => {
     expect(gen.next().value).toEqual(put(setAppStatusAC('failed')))
     expect(gen.next().done).toBeTruthy()
 })
+
